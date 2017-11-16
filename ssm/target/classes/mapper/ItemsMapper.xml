@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hancy.dao.ItemsMapper" >
+
+	<sql id="selectItems">
+		select id, name, price, detail, pic, createtime from items
+	</sql>
+	
+	<!-- 查询所有 -->
+	<select id="findItemByAll" resultType="Items">
+		<include refid="selectItems" />
+	</select>
+	<!-- 名称模糊查询 -->
+	<select id="findItemsByName" parameterType="String" resultType="Items">
+		<include refid="selectItems" />
+		where name like CONCAT('%',#{name},'%')
+	</select>
+	<!-- ID查询 -->
+	<select id="findItemsById" parameterType="Integer" resultType="Items">
+		<include refid="selectItems" />
+		where id = #{id}
+	</select>
+	<!-- 更新 -->
+	<update id="updateItems" parameterType="Items">
+		update items set name = #{name}, price = #{price}, detail = #{detail}, pic = #{pic}, createtime = #{createtime} where id = #{id}
+	</update>
+	
+	<!--
+  		collection  必选  foreach的对象,作为入参时为list/arrary/map(map的key就是参数名)
+  						 嵌套循环时,里面的collection的值为外面的item的值
+  		item   		必选  循环体中的具体对象,支持属性点路径访问,如item.xxx
+  						 map循环时表示value
+  		open   		可选  foreach代码的开始符号,一般和close合用; 常用在in(),values()
+  		close  		可选  foreach代码的关闭符号,一般和open合用; 常用在in(),values()
+  		separator 	可选	 元素之间的分隔符,例在in()的时候separator=","会自动在元素中间用","隔开
+  		index		可选  在list和数组中index是元素的序号,在map中index是元素的key
+  	-->
+	
+	<!-- 批量删除 -->
+	<delete id="deleteItems">
+		delete from items where id in 
+   		<foreach collection="array" item="id" open="(" separator="," close=")">
+   			#{id}
+   		</foreach>
+	</delete>
+	
+	<!-- 批量更新 -->
+	<update id="batchupdateItems">
+		<!-- 此方式需要在jdbc.url属性添加allowMultiQueries=true表示一次可以执行多条sql -->
+		<foreach collection="list" item="items" separator=";" >
+   			update items set name = #{items.name}, price = #{items.price} where id = #{items.id}
+   		</foreach>
+	</update>
+
+</mapper>
